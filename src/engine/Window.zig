@@ -1,13 +1,16 @@
 const std = @import("std");
+const Texture = @import("Texture.zig");
+const main = @import("../main.zig");
+
 const sdl2 = @cImport({
     @cInclude("SDL2/SDL.h");
 });
-const main = @import("main.zig");
 const this = @This();
 
 pub const WindowError = error{
     create_failed,
     event_poll_failed,
+    render_failed,
 };
 
 sdl2_window: *sdl2.SDL_Window,
@@ -28,6 +31,20 @@ pub fn init(name: []const u8) WindowError!this {
     };
 
     return window;
+}
+
+pub fn renderTexture(self: *this, texture: Texture, x: usize, y: usize) void {
+    const render_quad: sdl2.SDL_Rect = .{
+        .x = x,
+        .y = y,
+        .w = texture.width,
+        .h = texture.height,
+    };
+    sdl2.SDL_RenderCopy(self.sdl2_renderer, texture.sdl2_texture, null, &render_quad);
+}
+
+pub fn renderPresent(self: *this) void {
+    sdl2.SDL_RenderPresent(self.sdl2_renderer);
 }
 
 pub fn destroy(self: *this) void {
